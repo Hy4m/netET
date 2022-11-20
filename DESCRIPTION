@@ -1,0 +1,32 @@
+Package: netET
+Type: Package
+Title: Miscellaneous functions of Network analysis and visulization
+Version: 0.1.0
+Author: Houyun Huang <houyunhuang@163.com>
+Maintainer: Houyun Huang <houyunhuang@163.com>
+Description: Miscellaneous functions commonly and personally used in Network
+    analysis and visulization.
+License: GPL-2
+URL: https://github.com/Hy4m/netET
+BugReports: https://github.com/Hy4m/netET
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 3.5.0)
+Imports: 
+    cli,
+    dplyr,
+    ggplot2,
+    ggraph,
+    igraph,
+    linkET (>= 0.0.5),
+    stats,
+    tibble,
+    tidygraph,
+    utils
+Suggests: 
+    sna,
+    graphlayouts,
+    packcircles,
+    testthat (>= 3.0.0)
+RoxygenNote: 7.2.1
