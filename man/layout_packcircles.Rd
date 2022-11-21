@@ -23,8 +23,8 @@ arranges nodes by degree.
 }
 \seealso{
 Other layout: 
-\code{\link{layout_fr_circular}()},
-\code{\link{layout_in_circular}()}
+\code{\link{layout_fr_circle}()},
+\code{\link{layout_in_circle}()}
 }
 \author{
 Hou Yun

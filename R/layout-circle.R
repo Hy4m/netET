@@ -8,15 +8,15 @@
 #' @param ... other parameters passing to \code{layout} function.
 #' @return a two-columns matrix.
 #' @family layout
-#' @rdname layout_circular
+#' @rdname layout_circle
 #' @author Hou Yun
 #' @export
-layout_in_circular <- function(g,
-                               layout = NULL,
-                               group_vars = NULL,
-                               center = NULL,
-                               zoom = 0.618,
-                               ...) {
+layout_in_circle <- function(g,
+                             layout = NULL,
+                             group_vars = NULL,
+                             center = NULL,
+                             zoom = 0.618,
+                             ...) {
   if (empty_graph(g)) {
     return(matrix(nrow = 0, ncol = 2))
   }
@@ -31,13 +31,13 @@ layout_in_circular <- function(g,
   as.matrix(xy[1:2])
 }
 
-#' @rdname layout_circular
+#' @rdname layout_circle
 #' @family layout
 #' @export
-layout_on_circular <- function(g,
-                               group_vars = NULL,
-                               center = NULL,
-                               zoom = 0.618) {
+layout_on_circle <- function(g,
+                             group_vars = NULL,
+                             center = NULL,
+                             zoom = 0.618) {
   if (empty_graph(g)) {
     return(matrix(nrow = 0, ncol = 2))
   }
@@ -53,7 +53,7 @@ layout_on_circular <- function(g,
   as.matrix(gen_circle(nodes, as.character(group), center, zoom)[1:2])
 }
 
-#' @rdname layout_circular
+#' @rdname layout_circle
 #' @family layout
 #' @export
 layout_zoomin_circle <- function(g, layout = NULL, zoom = 0.97, ...) {

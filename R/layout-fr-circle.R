@@ -6,10 +6,10 @@
 #' @param ... other parameters passing to \code{layout_in_circular()} function.
 #' @return a two-columns matrix.
 #' @family layout
-#' @rdname layout_fr_circular
+#' @rdname layout_fr_circle
 #' @author Hou Yun
 #' @export
-layout_fr_circular <- function(g, group_vars = NULL, ...) {
+layout_fr_circle <- function(g, group_vars = NULL, ...) {
   if (empty_graph(g)) {
     return(matrix(nrow = 0, ncol = 2))
   }
@@ -25,10 +25,10 @@ layout_fr_circular <- function(g, group_vars = NULL, ...) {
     center <- list(x = stats::setNames(coord[, 1, drop = TRUE], rownames(adj)),
                    y = stats::setNames(coord[, 2, drop = TRUE], rownames(adj)))
   }
-  layout_in_circular(g = g,
-                     group_vars = group_vars,
-                     center = center,
-                     ...)
+  layout_in_circle(g = g,
+                   group_vars = group_vars,
+                   center = center,
+                   ...)
 }
 
 #' @noRd

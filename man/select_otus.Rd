@@ -9,7 +9,7 @@ select_otus(
   otu_on_rows = TRUE,
   occur_thres = 0.5,
   abund_thres = 0.001,
-  reverse = NULL
+  reverse = FALSE
 )
 }
 \arguments{
