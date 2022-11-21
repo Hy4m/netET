@@ -8,7 +8,7 @@ Description: Miscellaneous functions commonly and personally used in Network
     analysis and visulization.
 License: GPL-2
 URL: https://github.com/Hy4m/netET
-BugReports: https://github.com/Hy4m/netET
+BugReports: https://github.com/Hy4m/netET/issue
 Encoding: UTF-8
 LazyData: true
 Depends:
