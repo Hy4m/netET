@@ -9,13 +9,13 @@
 layout_in_circle(
   g,
   layout = NULL,
-  group_vars = NULL,
+  group = NULL,
   center = NULL,
   zoom = 0.618,
   ...
 )
 
-layout_on_circle(g, group_vars = NULL, center = NULL, zoom = 0.618)
+layout_on_circle(g, group = NULL, center = NULL, zoom = 0.618)
 
 layout_zoomin_circle(g, layout = NULL, zoom = 0.97, ...)
 }
@@ -24,7 +24,7 @@ layout_zoomin_circle(g, layout = NULL, zoom = 0.97, ...)
 
 \item{layout}{function used to calculate node positions.}
 
-\item{group_vars}{if NULL (default), all nodes will be treated as single group.}
+\item{group}{if NULL (default), all nodes will be treated as single group.}
 
 \item{center}{a list named with x and y.}
 

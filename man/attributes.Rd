@@ -7,23 +7,23 @@
 \alias{centrality_between_module}
 \title{Network Attributions}
 \usage{
-z_score(g, module_vars = NULL, ...)
+z_score(g, module = NULL, ...)
 
-p_score(g, module_vars = NULL, degree_vars = NULL, ...)
+p_score(g, module = NULL, degree = NULL, ...)
 
-centrality_in_module(module_vars = NULL, ...)
+centrality_in_module(module = NULL, ...)
 
-centrality_between_module(module_vars = NULL, degree_vars = NULL, ...)
+centrality_between_module(module = NULL, degree = NULL, ...)
 }
 \arguments{
 \item{g}{a igraph object.}
 
-\item{module_vars}{if NULL (default), will uses \code{igraph::cluster_fast_greedy()}
+\item{module}{if NULL (default), will uses \code{igraph::cluster_fast_greedy()}
 function to calculate module index.}
 
 \item{...}{other parameters passing to \code{igraph::cluster_fast_greedy()}.}
 
-\item{degree_vars}{if NULL (default), will uses \code{igraph::degree()} to calculate
+\item{degree}{if NULL (default), will uses \code{igraph::degree()} to calculate
 degree attributes of nodes.}
 }
 \value{

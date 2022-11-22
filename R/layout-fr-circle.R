@@ -2,22 +2,27 @@
 #' @description arranges nodes in circles and each group center is determine by
 #' Fruchterman-Reingold layout.
 #' @param g igraph object.
-#' @param group_vars if NULL (default), all nodes will be treated as single group.
+#' @param group if NULL (default), all nodes will be treated as single group.
 #' @param ... other parameters passing to \code{layout_in_circular()} function.
 #' @return a two-columns matrix.
 #' @family layout
 #' @rdname layout_fr_circle
 #' @author Hou Yun
 #' @export
-layout_fr_circle <- function(g, group_vars = NULL, ...) {
+layout_fr_circle <- function(g, group = NULL, ...) {
   if (empty_graph(g)) {
     return(matrix(nrow = 0, ncol = 2))
   }
 
-  if (is.null(group_vars)) {
+  group <- rlang::enquo(group)
+
+  if (rlang::quo_is_null(group)) {
     center <- list(x = 0, y = 0)
   } else {
-    adj <- make_weights(g, igraph::vertex_attr(g, group_vars))
+    nodes <- igraph::as_data_frame(g, "vertices")
+    group <- rlang::eval_tidy(group, nodes)
+    group <- rep_len(group, nrow(nodes))
+    adj <- make_weights(g, group)
     g2 <- igraph::graph_from_adjacency_matrix(adj,
                                               mode = "undirected",
                                               weighted = TRUE)
@@ -26,7 +31,7 @@ layout_fr_circle <- function(g, group_vars = NULL, ...) {
                    y = stats::setNames(coord[, 2, drop = TRUE], rownames(adj)))
   }
   layout_in_circle(g = g,
-                   group_vars = group_vars,
+                   group = group,
                    center = center,
                    ...)
 }

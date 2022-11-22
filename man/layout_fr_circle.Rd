@@ -4,12 +4,12 @@
 \alias{layout_fr_circle}
 \title{Circular Layout With FR}
 \usage{
-layout_fr_circle(g, group_vars = NULL, ...)
+layout_fr_circle(g, group = NULL, ...)
 }
 \arguments{
 \item{g}{igraph object.}
 
-\item{group_vars}{if NULL (default), all nodes will be treated as single group.}
+\item{group}{if NULL (default), all nodes will be treated as single group.}
 
 \item{...}{other parameters passing to \code{layout_in_circular()} function.}
 }

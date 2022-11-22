@@ -4,12 +4,12 @@
 \alias{layout_packcircles}
 \title{Packcircle Layout}
 \usage{
-layout_packcircles(g, degree_vars = NULL, ...)
+layout_packcircles(g, degree = NULL, ...)
 }
 \arguments{
 \item{g}{igraph object.}
 
-\item{degree_vars}{if NULL (default), will use \code{igraph::degree()} to
+\item{degree}{if NULL (default), will use \code{igraph::degree()} to
 calculate degree.}
 
 \item{...}{other parameters passing to

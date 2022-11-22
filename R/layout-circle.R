@@ -3,7 +3,7 @@
 #' @param g igraph object.
 #' @param layout function used to calculate node positions.
 #' @param center a list named with x and y.
-#' @param group_vars if NULL (default), all nodes will be treated as single group.
+#' @param group if NULL (default), all nodes will be treated as single group.
 #' @param zoom numeric, range in [0, 1].
 #' @param ... other parameters passing to \code{layout} function.
 #' @return a two-columns matrix.
@@ -13,17 +13,21 @@
 #' @export
 layout_in_circle <- function(g,
                              layout = NULL,
-                             group_vars = NULL,
+                             group = NULL,
                              center = NULL,
                              zoom = 0.618,
                              ...) {
   if (empty_graph(g)) {
     return(matrix(nrow = 0, ncol = 2))
   }
-  if (is.null(group_vars)) {
+
+  group <- rlang::enquo(group)
+  if (rlang::quo_is_null(group)) {
     group <- rep_len(1L, igraph::vcount(g))
   } else {
-    group <- igraph::vertex_attr(g, group_vars)
+    nodes <- igraph::as_data_frame(g, "vertices")
+    group <- rlang::eval_tidy(group, nodes)
+    group <- rep_len(group, nrow(nodes))
   }
 
   layout <- layout %||% igraph::layout.auto
@@ -35,21 +39,23 @@ layout_in_circle <- function(g,
 #' @family layout
 #' @export
 layout_on_circle <- function(g,
-                             group_vars = NULL,
+                             group = NULL,
                              center = NULL,
                              zoom = 0.618) {
   if (empty_graph(g)) {
     return(matrix(nrow = 0, ncol = 2))
   }
 
-  if (is.null(group_vars)) {
+  group <- rlang::enquo(group)
+  if (rlang::quo_is_null(group)) {
     group <- rep_len(1L, igraph::vcount(g))
   } else {
-    group <- igraph::vertex_attr(g, group_vars)
+    nodes <- igraph::as_data_frame(g, "vertices")
+    group <- rlang::eval_tidy(group, nodes)
+    group <- rep_len(group, nrow(nodes))
   }
 
   nodes <- igraph::vertex_attr(g, "name")
-
   as.matrix(gen_circle(nodes, as.character(group), center, zoom)[1:2])
 }
 

@@ -1,20 +1,23 @@
 #' @title Network Attributions
 #' @description helper functions to get nodes/edges/graph attributions.
 #' @param g a igraph object.
-#' @param module_vars if NULL (default), will uses \code{igraph::cluster_fast_greedy()}
+#' @param module if NULL (default), will uses \code{igraph::cluster_fast_greedy()}
 #' function to calculate module index.
-#' @param degree_vars if NULL (default), will uses \code{igraph::degree()} to calculate
+#' @param degree if NULL (default), will uses \code{igraph::degree()} to calculate
 #' degree attributes of nodes.
 #' @param ... other parameters passing to \code{igraph::cluster_fast_greedy()}.
 #' @return a numeric vectors.
 #' @rdname attributes
 #' @author Hou Yun
 #' @export
-z_score <- function(g, module_vars = NULL, ...) {
-  if (is.null(module_vars)) {
+z_score <- function(g, module = NULL, ...) {
+  module <- rlang::enquo(module)
+  if (rlang::quo_is_null(module)) {
     memb <- igraph::membership(igraph::cluster_fast_greedy(g, ...))
   } else {
-    memb <- igraph::vertex_attr(g, module_vars)
+    nodes <- igraph::as_data_frame(g, "vertices")
+    memb <- rlang::eval_tidy(module, nodes)
+    memb <- rep_len(memb, nrow(memb))
   }
 
   adj <- igraph::as_adj(g, sparse = FALSE, names = TRUE)
@@ -40,18 +43,24 @@ z_score <- function(g, module_vars = NULL, ...) {
 #' @rdname attributes
 #' @export
 p_score <- function(g,
-                    module_vars = NULL,
-                    degree_vars = NULL,
+                    module = NULL,
+                    degree = NULL,
                     ...) {
-  if (is.null(module_vars)) {
+  module <- rlang::enquo(module)
+  degree <- rlang::enquo(degree)
+  nodes <- igraph::as_data_frame(g, "vertices")
+  if (rlang::quo_is_null(module)) {
     memb <- igraph::membership(igraph::cluster_fast_greedy(g, ...))
   } else {
-    memb <- igraph::vertex_attr(g, module_vars)
+    memb <- rlang::eval_tidy(module, nodes)
+    memb <- rep_len(memb, nrow(memb))
   }
-  if (is.null(degree_vars)) {
+
+  if (rlang::quo_is_null(degree)) {
     degree <- igraph::degree(g)
   } else {
-    degree <- igraph::vertex_attr(g, degree_vars)
+    degree <- rlang::eval_tidy(degree, nodes)
+    degree <- rep_len(degree, nrow(nodes))
   }
   adj <- igraph::as_adj(g, sparse = FALSE, names = TRUE)
 
@@ -68,18 +77,18 @@ p_score <- function(g,
 
 #' @rdname attributes
 #' @export
-centrality_in_module <- function(module_vars = NULL, ...) {
+centrality_in_module <- function(module = NULL, ...) {
   expect_nodes()
   graph <- as.igraph(tidygraph::.G())
-  z_score(graph, module_vars = module_vars, ...)
+  z_score(graph, module = module, ...)
 }
 
 #' @rdname attributes
 #' @export
-centrality_between_module <- function(module_vars = NULL,
-                                      degree_vars = NULL,
+centrality_between_module <- function(module = NULL,
+                                      degree = NULL,
                                       ...) {
   expect_nodes()
   graph <- as.igraph(tidygraph::.G())
-  p_score(graph, module_vars = module_vars, degree_vars = degree_vars, ...)
+  p_score(graph, module = module, degree = degree, ...)
 }
