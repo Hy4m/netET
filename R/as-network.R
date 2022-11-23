@@ -22,8 +22,17 @@ as.igraph.cor_md_tbl <- function(x,
   rnm <- linkET::row_names(x)
   cnm <- linkET::col_names(x)
   x <- dplyr::filter(x, ...)
+
+  if (isFALSE(diag)) {
+    x <- linkET::trim_diag(x)
+  }
+
   if (isTRUE(simplify)) {
-    x <- linkET::trim_duplicate(x, diag = !diag)
+    if (isTRUE(directed)) {
+      x <- x[!duplicated(x), , drop = FALSE]
+    } else {
+      x <- linkET::trim_duplicate(x, diag = !diag)
+    }
     nodes <- unique(c(x$.rownames, x$.colnames))
   } else {
     nodes <- unique(c(rnm, cnm))
