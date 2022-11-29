@@ -5,6 +5,7 @@
 #' @param center a list named with x and y.
 #' @param group if NULL (default), all nodes will be treated as single group.
 #' @param zoom numeric, range in [0, 1].
+#' @param by_nodes logical, indicating whether to scale based on the number of nodes.
 #' @param ... other parameters passing to \code{layout} function.
 #' @return a two-columns matrix.
 #' @family layout

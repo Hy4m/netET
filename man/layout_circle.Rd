@@ -31,6 +31,8 @@ layout_zoomin_circle(g, layout = NULL, center = NULL, ...)
 
 \item{zoom}{numeric, range in [0, 1].}
 
+\item{by_nodes}{logical, indicating whether to scale based on the number of nodes.}
+
 \item{...}{other parameters passing to \code{layout} function.}
 }
 \value{
