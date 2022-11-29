@@ -11,11 +11,12 @@ layout_in_circle(
   layout = NULL,
   group = NULL,
   center = NULL,
-  zoom = 0.618,
+  zoom = 0.9,
+  by_nodes = FALSE,
   ...
 )
 
-layout_on_circle(g, group = NULL, center = NULL, zoom = 0.618)
+layout_on_circle(g, group = NULL, center = NULL, zoom = 0.618, by_nodes = TRUE)
 
 layout_zoomin_circle(g, layout = NULL, center = NULL, ...)
 }
@@ -40,15 +41,12 @@ arranges nodes in circles according to group information.
 }
 \seealso{
 Other layout: 
-\code{\link{layout_fr_circle}()},
 \code{\link{layout_packcircles}()}
 
 Other layout: 
-\code{\link{layout_fr_circle}()},
 \code{\link{layout_packcircles}()}
 
 Other layout: 
-\code{\link{layout_fr_circle}()},
 \code{\link{layout_packcircles}()}
 }
 \author{
