@@ -22,7 +22,6 @@ Imports:
     linkET (>= 0.0.5),
     rlang,
     stats,
-    tibble,
     tidygraph,
     utils
 Suggests: 

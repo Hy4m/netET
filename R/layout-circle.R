@@ -15,7 +15,8 @@ layout_in_circle <- function(g,
                              layout = NULL,
                              group = NULL,
                              center = NULL,
-                             zoom = 0.618,
+                             zoom = 0.9,
+                             by_nodes = FALSE,
                              ...) {
   if (empty_graph(g)) {
     return(matrix(nrow = 0, ncol = 2))
@@ -31,8 +32,7 @@ layout_in_circle <- function(g,
   }
 
   layout <- layout %||% igraph::layout.auto
-  xy <- gen_in_circle(g, layout, as.character(group), center, zoom, ...)
-  as.matrix(xy[1:2])
+  gen_in_circle(g, layout, as.character(group), center, zoom, by_nodes, ...)
 }
 
 #' @rdname layout_circle
@@ -41,7 +41,8 @@ layout_in_circle <- function(g,
 layout_on_circle <- function(g,
                              group = NULL,
                              center = NULL,
-                             zoom = 0.618) {
+                             zoom = 0.618,
+                             by_nodes = TRUE) {
   if (empty_graph(g)) {
     return(matrix(nrow = 0, ncol = 2))
   }
@@ -56,13 +57,16 @@ layout_on_circle <- function(g,
   }
 
   nodes <- igraph::vertex_attr(g, "name")
-  as.matrix(gen_circle(nodes, as.character(group), center, zoom)[1:2])
+  gen_circle(nodes, as.character(group), center, zoom, by_nodes)
 }
 
 #' @rdname layout_circle
 #' @family layout
 #' @export
-layout_zoomin_circle <- function(g, layout = NULL, zoom = 0.97, ...) {
+layout_zoomin_circle <- function(g,
+                                 layout = NULL,
+                                 center = NULL,
+                                 ...) {
   layout <- layout %||% igraph::layout.auto
   xy <- layout(g, ...)
   if (nrow(xy) < 1) {
@@ -71,193 +75,132 @@ layout_zoomin_circle <- function(g, layout = NULL, zoom = 0.97, ...) {
 
   x <- xy[, 1, drop = TRUE]
   y <- xy[, 2, drop = TRUE]
-  cx <- sum(range(x, na.rm = TRUE))/2
-  cy <- sum(range(y, na.rm = TRUE))/2
-  d <- euclidean_dist(x, y, cx, cy)
-  r <- max(d, na.rm = TRUE)/sqrt(abs(zoom))
+  if (is.null(center)) {
+    cx <- mean(x, na.rm = TRUE)
+    cy <- mean(y, na.rm = TRUE)
+  } else {
+    cx <- center$x %||% mean(x, na.rm = TRUE)
+    cy <- center$y %||% mean(y, na.rm = TRUE)
+  }
 
-  id <- abs(r - d)/2 < 10^(-5)
-  delta <- d/(r - d)
-  xx <- (cx + delta*x)/(1 + delta)
-  yy <- (cy + delta*y)/(1 + delta)
-  xx <- ifelse(id, x, xx)
-  yy <- ifelse(id, y, yy)
-
-  matrix(c(xx, yy), ncol = 2, byrow = FALSE)
+  zoomin_circle(xy, cx, cy, 1)
 }
 
 #' @noRd
-gen_circle <- function(nodes, group, center, zoom = 0.618) {
+gen_circle <- function(nodes, group, center, zoom = 0.618, by_nodes = TRUE) {
   group <- split(nodes, group)
   ll <- length(group)
   nm <- names(group)
   n <- vapply(group, length, numeric(1))
 
-  if(ll == 1L) {
-    if (is.null(center)) {
-      cx <- 0
-      cy <- 0
+  if (is.null(center)) {
+    if (ll == 1L) {
+      cx <- stats::setNames(0, nm)
+      cy <- stats::setNames(0, nm)
     } else {
-      cx <- center$x[1]
-      cy <- center$y[1]
-    }
-    if (n == 1) {
-      xy <- tibble::tibble(x = cx,
-                           y = cy,
-                           nodes = nodes)
-    } else {
-      t <- seq(0, 2 * pi, length.out = n + 1L)[-(n + 1L)]
-      xy <- tibble::tibble(x = cos(t) + cx,
-                           y = sin(t) + cy,
-                           nodes = nodes)
+      tt <- seq(0, 2 * pi, length.out = ll + 1L)[-(ll + 1L)]
+      cx <- stats::setNames(cos(tt), nm)
+      cy <- stats::setNames(sin(tt), nm)
     }
   } else {
-    if (!is.null(center)) {
-      cx <- center$x
-      cy <- center$y
-      cx <- get_center(cx, nm)
-      cy <- get_center(cy, nm)
+    cx <- get_center(center$x, nm)
+    cy <- get_center(center$y, nm)
+  }
+
+  if(ll == 1L) {
+    if (n == 1) {
+      xy <- matrix(c(cx, cy), ncol = 2, byrow = FALSE)
     } else {
-      t1 <- seq(0, 2 * pi, length.out = ll + 1L)[-(ll + 1L)]
-      cx <- stats::setNames(cos(t1), nm)
-      cy <- stats::setNames(sin(t1), nm)
+      t <- seq(0, 2 * pi, length.out = n + 1L)[-(n + 1L)]
+      xy <- matrix(c(cos(t) + cx, sin(t) + cy), ncol = 2, byrow = FALSE)
+    }
+  } else {
+    r <- min(
+      vapply(nm, function(.nm) {
+        other <- setdiff(nm, .nm)
+        min(euclidean_dist(cx[other], cy[other], cx[.nm], cy[.nm]), na.rm = TRUE)/2
+      }, numeric(1)),
+      na.rm = TRUE
+    )
+
+    if (isTRUE(by_nodes)) {
+      r <- stats::setNames(sqrt(abs(zoom)) * r * sqrt(n/max(n)), nm)
+    } else {
+      r <- stats::setNames(rep_len(sqrt(abs(zoom)) * r, ll), nm)
     }
 
-    min_dist <- vapply(nm, function(.nm) {
-      other <- setdiff(nm, .nm)
-      min(euclidean_dist(cx[other], cy[other], cx[.nm], cy[.nm]), na.rm = TRUE)
-    }, numeric(1))
-    r <- stats::setNames(sqrt(abs(zoom)) * min(min_dist)/2 * sqrt(n) / max(sqrt(n)), nm)
-
-    xy <-  tibble::tibble(x = numeric(0),
-                          y = numeric(0),
-                          nodes = character(0))
+    ids <- unlist(unname(lapply(group, function(g) ids(g, nodes))))
+    xy <- matrix(nrow = 0, ncol = 2)
     for (ii in nm) {
       if (n[ii] == 1) {
-        xy <- dplyr::bind_rows(xy, tibble::tibble(x = cx[ii],
-                                                  y = cy[ii],
-                                                  nodes = group[[ii]]))
+        xy <- rbind(xy, matrix(c(cx[ii], cy[ii]),
+                               ncol = 2,
+                               byrow = FALSE))
       } else {
         t <- seq(0, 2 * pi, length.out = n[ii] + 1L)[-(n[ii] + 1L)]
-        xy <- dplyr::bind_rows(xy, tibble::tibble(x = r[ii] * cos(t) + cx[ii],
-                                                  y = r[ii] * sin(t) + cy[ii],
-                                                  nodes = group[[ii]]))
+        xy <- rbind(xy, matrix(c(r[ii] * cos(t) + cx[ii], r[ii] * sin(t) + cy[ii]),
+                               ncol = 2,
+                               byrow = FALSE))
       }
     }
+    xy <- reorder_by_ids(xy, ids)
   }
-  xy[linkET::get_order(nodes, xy$nodes), ]
+  xy
 }
 
-gen_in_circle <- function(g, layout, group, center, zoom = 0.618, ...) {
+#' @noRd
+gen_in_circle <- function(g, layout, group, center, zoom = 0.9, by_nodes = TRUE, ...) {
   nodes <- igraph::vertex_attr(g, "name")
   group <- split(nodes, group)
+  n <- vapply(group, length, numeric(1))
   ll <- length(group)
   nm <- names(group)
-  n <- vapply(group, length, numeric(1))
+
+  if (is.null(center)) {
+    if (ll == 1L) {
+      cx <- stats::setNames(0, nm)
+      cy <- stats::setNames(0, nm)
+    } else {
+      tt <- seq(0, 2 * pi, length.out = ll + 1L)[-(ll + 1L)]
+      cx <- stats::setNames(cos(tt), nm)
+      cy <- stats::setNames(sin(tt), nm)
+    }
+  } else {
+    cx <- get_center(center$x, nm)
+    cy <- get_center(center$y, nm)
+  }
 
   coords <- structure(as.list(rep_len(NA, ll)), names = nm)
   for (ii in nm) {
-    subg <- igraph::subgraph(g, group[[ii]])
+    subg <- igraph::subgraph(g, which(nodes %in% group[[ii]]))
     coords[[ii]] <- layout(subg, ...)
   }
 
   if(ll == 1L) {
-    if (is.null(center)) {
-      cx <- 0
-      cy <- 0
-    } else {
-      cx <- get_center(center$x, nm)
-      cy <- get_center(center$y, nm)
-    }
-    if (n == 1) {
-      xy <- tibble::tibble(x = cx,
-                           y = cy,
-                           nodes = nodes)
-    } else {
-      x <- coords[[ii]][, 1, drop = TRUE]
-      y <- coords[[ii]][, 2, drop = TRUE]
-      diff_x <- cx - sum(range(x, na.rm = TRUE))/2
-      diff_y <- cy - sum(range(y, na.rm = TRUE))/2
-      x <- x + diff_x
-      y <- y + diff_y
-      d <- euclidean_dist(x, y, cx, cy)
-      r <- max(d, na.rm = TRUE)/sqrt(0.97)
-
-      id <- abs(r - d)/2 < 10^(-5)
-      delta <- d/(r - d)
-      xx <- (cx + delta*x)/(1 + delta)
-      yy <- (cy + delta*y)/(1 + delta)
-      xx <- ifelse(id, x, xx)
-      yy <- ifelse(id, y, yy)
-      xy <- tibble::tibble(x = xx,
-                           y = yy,
-                           nodes = nodes)
-    }
+    xy <- zoomin_circle(coords[[nm]], cx, cy, 1)
   } else {
-    if (!is.null(center)) {
-      cx <- center$x
-      cy <- center$y
-      cx <- get_center(cx, nm)
-      cy <- get_center(cy, nm)
+    r <- min(
+      vapply(nm, function(.nm) {
+        other <- setdiff(nm, .nm)
+        min(euclidean_dist(cx[other], cy[other], cx[.nm], cy[.nm]), na.rm = TRUE)/2
+      }, numeric(1)),
+      na.rm = TRUE
+    )
+
+    if (isTRUE(by_nodes)) {
+      r <- stats::setNames(sqrt(abs(zoom)) * r * sqrt(n/max(n)), nm)
     } else {
-      t1 <- seq(0, 2 * pi, length.out = ll + 1L)[-(ll + 1L)]
-      cx <- stats::setNames(cos(t1), nm)
-      cy <- stats::setNames(sin(t1), nm)
+      r <- stats::setNames(rep_len(sqrt(abs(zoom)) * r, ll), nm)
     }
 
-    min_dist <- vapply(nm, function(.nm) {
-      other <- setdiff(nm, .nm)
-      min(euclidean_dist(cx[other], cy[other], cx[.nm], cy[.nm]), na.rm = TRUE)
-    }, numeric(1))
-    r <- stats::setNames(sqrt(abs(zoom)) * min(min_dist)/2 * sqrt(n) / max(sqrt(n)), nm)
-
-    xy <-  tibble::tibble(x = numeric(0),
-                          y = numeric(0),
-                          nodes = character(0))
+    ids <- unlist(lapply(group, function(g) ids(g, nodes)))
+    xy <- matrix(nrow = 0, ncol = 2)
     for (ii in nm) {
-      if (n[ii] == 1) {
-        xy <- dplyr::bind_rows(xy, tibble::tibble(x = cx[ii],
-                                                  y = cy[ii],
-                                                  nodes = group[[ii]]))
-      } else {
-        x <- coords[[ii]][, 1, drop = TRUE]
-        y <- coords[[ii]][, 2, drop = TRUE]
-        diff_x <- cx[ii] - sum(range(x, na.rm = TRUE))/2
-        diff_y <- cy[ii] - sum(range(y, na.rm = TRUE))/2
-        x <- x + diff_x
-        y <- y + diff_y
-        d <- euclidean_dist(x, y, cx, cy)
-        r <- max(d, na.rm = TRUE)/sqrt(0.97)
-
-        id <- abs(r - d)/2 < 10^(-5)
-        delta <- d/(r - d)
-        xx <- (cx[ii] + delta*x)/(1 + delta)
-        yy <- (cy[ii] + delta*y)/(1 + delta)
-        xx <- ifelse(id, x, xx)
-        yy <- ifelse(id, y, yy)
-        xy <- dplyr::bind_rows(xy, tibble::tibble(x = xx,
-                                                  y = yy,
-                                                  nodes = group[[ii]]))
-      }
+      xy <- rbind(xy, zoomin_circle(coords[[ii]], cx[ii], cy[ii], r[ii]))
     }
+    xy <- reorder_by_ids(xy, ids)
   }
-  xy[linkET::get_order(nodes, xy$nodes), ]
-}
-
-#' @noRd
-semi_diameter <- function(x, y) {
-  n <- max(length(x), length(y))
-  x <- rep_len(x, n)
-  y <- rep_len(y, n)
-  if (n == 1) {
-    out <- 1
-  } else {
-    out <- vector("numeric", n)
-    for (ii in seq_len(n)) {
-      out[ii] <- max(sqrt((x[-ii] - x[ii])^2 + (y[-ii] - y[ii])^2)/2)
-    }
-  }
-  out
+  xy
 }
 
 #' @noRd

@@ -17,7 +17,7 @@ layout_in_circle(
 
 layout_on_circle(g, group = NULL, center = NULL, zoom = 0.618)
 
-layout_zoomin_circle(g, layout = NULL, zoom = 0.97, ...)
+layout_zoomin_circle(g, layout = NULL, center = NULL, ...)
 }
 \arguments{
 \item{g}{igraph object.}

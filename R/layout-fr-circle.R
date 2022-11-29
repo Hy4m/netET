@@ -13,23 +13,22 @@ layout_fr_circle <- function(g, group = NULL, ...) {
   if (empty_graph(g)) {
     return(matrix(nrow = 0, ncol = 2))
   }
-
   group <- rlang::enquo(group)
-
   if (rlang::quo_is_null(group)) {
-    center <- list(x = 0, y = 0)
-  } else {
-    nodes <- igraph::as_data_frame(g, "vertices")
-    group <- rlang::eval_tidy(group, nodes)
-    group <- rep_len(group, nrow(nodes))
-    adj <- make_weights(g, group)
-    g2 <- igraph::graph_from_adjacency_matrix(adj,
-                                              mode = "undirected",
-                                              weighted = TRUE)
-    coord <- igraph::layout_with_fr(g2)
-    center <- list(x = stats::setNames(coord[, 1, drop = TRUE], rownames(adj)),
-                   y = stats::setNames(coord[, 2, drop = TRUE], rownames(adj)))
+    return(igraph::layout_with_fr(g, ...))
   }
+
+  nodes <- igraph::as_data_frame(g, "vertices")
+  group <- rlang::eval_tidy(group, nodes)
+  group <- rep_len(group, nrow(nodes))
+  adj <- make_weights(g, group)
+  g2 <- igraph::graph_from_adjacency_matrix(adj,
+                                            mode = "undirected",
+                                            weighted = TRUE)
+  coord <- igraph::layout_with_fr(g2)
+  center <- list(x = stats::setNames(coord[, 1, drop = TRUE], rownames(adj)),
+                 y = stats::setNames(coord[, 2, drop = TRUE], rownames(adj)))
+
   layout_in_circle(g = g,
                    group = group,
                    center = center,
@@ -41,20 +40,22 @@ make_weights <- function(g, group) {
   nodes <- igraph::vertex_attr(g, "name")
   group <- split(nodes, group)
   edges <- igraph::as_data_frame(g, "edges")
+  nm <- names(group)
 
   n <- matrix(0,
               nrow = length(group),
               ncol = length(group),
-              dimnames = list(names(group), names(group)))
-  for (ii in names(group)) {
-    for (jj in names(group)) {
-      if (ii == jj) next
+              dimnames = list(nm, nm))
+  for (ii in seq_along(nm)) {
+    for (jj in seq_along(nm)) {
+      if (ii <= jj) next
       v <- group[[ii]]
       v2 <- group[[jj]]
-      id <- ((edges$from %in% v) & (edges$to %in% v2)) ||
+      id <- ((edges$from %in% v) & (edges$to %in% v2)) |
         ((edges$from %in% v2) & (edges$to %in% v))
       n[ii, jj] <- sum(id)
     }
   }
+  print(n)
   n
 }
