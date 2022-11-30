@@ -11,8 +11,8 @@ geom_node_magic_text <- function(mapping = NULL,
                                  geom = "text",
                                  parse = FALSE,
                                  ...) {
-  base <- ggplot2::aes_string(x = "x", y = "y")
-  mapping <- aes_modify(mapping, base)
+  base <- ggplot2::aes_string(x = "x", y = "y", label = "name")
+  mapping <- aes_modify(base, mapping)
   params <- list(data = data,
                  mapping = mapping,
                  stat = ggraph::StatFilter,
@@ -36,7 +36,7 @@ geom_node_shaping <- function(mapping = NULL,
                               position = "identity",
                               ...) {
   base <- ggplot2::aes_string(x = "x", y = "y")
-  mapping <- aes_modify(mapping, base)
+  mapping <- aes_modify(base, mapping)
   params <- list(data = data,
                  mapping = mapping,
                  stat = ggraph::StatFilter,
@@ -45,3 +45,4 @@ geom_node_shaping <- function(mapping = NULL,
                  ...)
   do.call(linkET::geom_shaping, params)
 }
+
