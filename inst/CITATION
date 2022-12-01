@@ -1,0 +1,13 @@
+citHeader("To cite netET in publications use:")
+citEntry(
+  entry    = "manual",
+  title    = paste("netET:", meta$Title),
+  author   = "Houyun Huang",
+  year     = "2022",
+  note     = paste("R package version", meta$Version),
+  url      = meta$URL,
+  textVersion = paste("Houyun Huang(2022).",
+                      paste0(paste("netET:", meta$Title), "."),
+                      paste0(paste("R package version", meta$Version), ".")
+                      )
+)
