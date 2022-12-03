@@ -15,7 +15,7 @@ get_function <- function (pkg, fun)
 empty <- function (df)
 {
   if (inherits(df, "data.frame") || inherits(df, "matrix")) {
-    is.null(df) || nrow(df) == 0 || ncol(df) == 0
+    nrow(df) == 0 || ncol(df) == 0
   } else {
     is.null(df) || length(df) == 0
   }
