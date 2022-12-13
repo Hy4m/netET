@@ -73,3 +73,45 @@ reorder_by_ids <- function(mat, ids) {
   ids <- as.integer(names(sort(ids)))
   mat[ids, , drop = FALSE]
 }
+
+#' @noRd
+quo_is_character <- function(x) {
+  is.character(rlang::quo_get_expr(x))
+}
+
+#' @noRd
+set_identical <- function(x, y) {
+  all(x %in% y) && all(y %in% x)
+}
+
+#' @noRd
+rename <- function (data, ...)
+{
+  ll <- list(...)
+  if (length(ll) == 0) {
+    data
+  } else {
+    nm <- names(data)
+    old <- unname(unlist(ll))
+    new <- names(ll)
+
+    old <- old[old %in% nm]
+    new <- new[old %in% nm]
+    names(data)[names(data) %in% old] <- new
+  }
+  data
+}
+
+#' @noRd
+calc_degree <- function(start, end) {
+  n <- max(length(start), length(end))
+  start <- rep_len(start %% 360, n)
+  end <- rep_len(end %% 360, n)
+
+  end <- ifelse(start == end | end == 0, end + 360, end)
+  temp <- start
+  start <- ifelse(start > end, end, start)
+  end <- ifelse(temp > end, temp, end)
+
+  list(start = start, end = end)
+}

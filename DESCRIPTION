@@ -21,6 +21,7 @@ Imports:
     igraph,
     linkET (>= 0.0.5),
     rlang,
+    scales,
     stats,
     tidygraph,
     utils
