@@ -16,9 +16,9 @@
 \alias{as_tbl_graph.corr.test}
 \title{Coerce to a Graph}
 \usage{
-\method{as.igraph}{cor_md_tbl}(x, ..., diag = FALSE, simplify = TRUE, directed = FALSE)
+\method{as.igraph}{cor_md_tbl}(x, ..., simplify = TRUE, directed = FALSE)
 
-\method{as.igraph}{correlate}(x, ..., diag = FALSE, simplify = TRUE, directed = FALSE)
+\method{as.igraph}{correlate}(x, ..., simplify = TRUE, directed = FALSE)
 
 \method{as.igraph}{mantel_tbl}(x, ...)
 
@@ -47,10 +47,8 @@
 
 \item{...}{other parameters.}
 
-\item{diag}{logical, if TRUE will keep the diagonal of adjacency matrix data.}
-
-\item{simplify}{if TRUE, Simple graphs are graphs which do not contain loop
-and multiple edges.}
+\item{simplify}{if TRUE, will return a simplified graph which do not contain
+loop and multiple edges.}
 
 \item{directed}{whether or not to create a directed graph.}
 }

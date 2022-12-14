@@ -1,9 +1,8 @@
 #' @title Coerce to a Graph
 #' @description Functions to coerce a object to graph if possible.
 #' @param x any \code{R} object.
-#' @param diag logical, if TRUE will keep the diagonal of adjacency matrix data.
-#' @param simplify if TRUE, Simple graphs are graphs which do not contain loop
-#' and multiple edges.
+#' @param simplify if TRUE, will return a simplified graph which do not contain
+#' loop and multiple edges.
 #' @param directed whether or not to create a directed graph.
 #' @param ... other parameters.
 #' @return  a graph object.
@@ -13,7 +12,6 @@
 #' @rdname network
 as.igraph.cor_md_tbl <- function(x,
                                  ...,
-                                 diag = FALSE,
                                  simplify = TRUE,
                                  directed = FALSE) {
   if (inherits(x, "grouped_md_tbl")) {
@@ -23,35 +21,47 @@ as.igraph.cor_md_tbl <- function(x,
   cnm <- linkET::col_names(x)
   x <- dplyr::filter(x, ...)
 
-  if (isFALSE(diag)) {
-    x <- linkET::trim_diag(x)
-  }
-
-  if (isTRUE(simplify)) {
-    if (isTRUE(directed)) {
-      x <- x[!duplicated(x), , drop = FALSE]
-    } else {
-      x <- linkET::trim_duplicate(x, diag = !diag)
+  if (!is.function(simplify)) {
+    if (is.null(simplify)) {
+      simplify <- FALSE
     }
-    nodes <- unique(c(x$.rownames, x$.colnames))
+    if (is.character(simplify)) {
+      simplify <- match.arg(simplify, c("edges", "nodes", "vertices", "all", "none"))
+      simplify <- switch (simplify,
+                          "edges" = TRUE,
+                          "nodes" = "vertices",
+                          "vertices" = "vertices",
+                          "none" = FALSE)
+    }
+  }
+  g <- igraph::graph_from_data_frame(x,
+                                     directed = directed,
+                                     vertices = c(rnm, cnm))
+  if (is.logical(simplify)) {
+    if (isTRUE(simplify)) {
+      g <- igraph::simplify(g)
+    }
+  } else if (is.function(simplify)) {
+    g <- simplify(g)
   } else {
-    nodes <- unique(c(rnm, cnm))
+    nodes <- igraph::V(g)$name
+    degree <- igraph::degree(g)
+    nodes <- nodes[degree < 1]
+    if (length(nodes) > 0) {
+      g <- igraph::delete_vertices(g, nodes)
+    }
   }
 
-  igraph::graph_from_data_frame(x, directed = directed, vertices = nodes)
+  g
 }
-
-
 
 #' @rdname network
 as.igraph.correlate <- function(x,
                                 ...,
-                                diag = FALSE,
                                 simplify = TRUE,
                                 directed = FALSE) {
   as.igraph(x = linkET::as_md_tbl(x),
             ...,
-            diag = diag,
             simplify = simplify,
             directed = directed)
 }
