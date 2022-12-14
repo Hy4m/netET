@@ -3,8 +3,9 @@
 #' Taxonomy table from Zhou(2022), see references for details.
 #'
 #' @format ## `zhou_taxonomy`
-#' A data frame with 8816 rows and 7 columns:
+#' A data frame with 8816 rows and 8 columns:
 #' \describe{
+#'   \item{OTU}{OTUs ID.}
 #'   \item{Kingdom}{Kingdom of root-associated microbiomes.}
 #'   \item{Phylum}{Phylum of root-associated microbiomes.}
 #'   \item{Class}{Class of root-associated microbiomes.}
