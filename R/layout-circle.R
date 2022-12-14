@@ -12,13 +12,13 @@
 #' @rdname layout_circle
 #' @author Hou Yun
 #' @export
-layout_in_circle <- function(g,
-                             layout = NULL,
-                             group = NULL,
-                             center = NULL,
-                             zoom = 0.9,
-                             by_nodes = FALSE,
-                             ...) {
+layout_within_circle <- function(g,
+                                 layout = NULL,
+                                 group = NULL,
+                                 center = NULL,
+                                 zoom = 0.9,
+                                 by_nodes = FALSE,
+                                 ...) {
   if (empty_graph(g)) {
     return(matrix(nrow = 0, ncol = 2))
   }

@@ -5,7 +5,7 @@
 #' @rdname normalize
 #' @author Hou Yun
 #' @export
-normalize <- function(mat) {
+layout_normalize <- function(mat) {
   if (empty(mat)) {
     return(mat)
   }

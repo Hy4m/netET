@@ -7,14 +7,12 @@
 #' @rdname layout_bipartite_circular
 #' @export
 layout_bipartite_circular <- function(g, ...) {
-  if (empty_graph(g)) {
-    return(matrix(nrow = 0, ncol = 2))
+  if (!inherits(g, "bipartite_circular_graph")) {
+    g <- as_bipartite_circular(g, ...)
   }
 
-  if (!inherits(g, "bipartite_circular_graph")) {
-    stop("`layout_bipartite_circular()` need a `bipartite_circular_graph`,\n",
-         "this object can be created by `as_bipartite_circular()`.",
-         call. = FALSE)
+  if (empty_graph(g)) {
+    return(matrix(nrow = 0, ncol = 2))
   }
 
   nodes <- igraph::as_data_frame(g, "vertices")
