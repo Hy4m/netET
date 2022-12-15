@@ -10,6 +10,7 @@
 #' @importFrom tidygraph as_tbl_graph
 #' @author Hou Yun
 #' @rdname network
+#' @export
 as.igraph.cor_md_tbl <- function(x,
                                  ...,
                                  simplify = TRUE,
@@ -21,29 +22,28 @@ as.igraph.cor_md_tbl <- function(x,
   cnm <- linkET::col_names(x)
   x <- dplyr::filter(x, ...)
 
-  if (!is.function(simplify)) {
-    if (is.null(simplify)) {
-      simplify <- FALSE
-    }
-    if (is.character(simplify)) {
-      simplify <- match.arg(simplify, c("edges", "nodes", "vertices", "all", "none"))
-      simplify <- switch (simplify,
-                          "edges" = TRUE,
-                          "nodes" = "vertices",
-                          "vertices" = "vertices",
-                          "none" = FALSE)
-    }
+  if (is.null(simplify)) {
+    simplify <- FALSE
   }
+  if (is.character(simplify)) {
+    simplify <- match.arg(simplify, c("edges", "nodes", "vertices", "all", "none"))
+    simplify <- switch (simplify,
+                        "edges" = TRUE,
+                        "all" = "all",
+                        "nodes" = "vertices",
+                        "vertices" = "vertices",
+                        "none" = FALSE)
+  }
+
+  if (isTRUE(simplify) || simplify == "edges" || simplify == "all") {
+    x <- linkET::trim_duplicate(x)
+  }
+
   g <- igraph::graph_from_data_frame(x,
                                      directed = directed,
-                                     vertices = c(rnm, cnm))
-  if (is.logical(simplify)) {
-    if (isTRUE(simplify)) {
-      g <- igraph::simplify(g)
-    }
-  } else if (is.function(simplify)) {
-    g <- simplify(g)
-  } else {
+                                     vertices = unique(c(rnm, cnm)))
+
+  if (simplify == "all" || simplify == "vertices") {
     nodes <- igraph::V(g)$name
     degree <- igraph::degree(g)
     nodes <- nodes[degree < 1]
@@ -56,6 +56,7 @@ as.igraph.cor_md_tbl <- function(x,
 }
 
 #' @rdname network
+#' @export
 as.igraph.correlate <- function(x,
                                 ...,
                                 simplify = TRUE,
@@ -67,26 +68,31 @@ as.igraph.correlate <- function(x,
 }
 
 #' @rdname network
+#' @export
 as.igraph.mantel_tbl <- function(x, ...) {
   as.igraph(linkET::as_md_tbl(x), ...)
 }
 
 #' @rdname network
+#' @export
 as.igraph.easycorrelation <- function(x, ...) {
   as.igraph(linkET::as_correlate(x), ...)
 }
 
 #' @rdname network
+#' @export
 as.igraph.rcorr <- function(x, ...) {
   as.igraph(linkET::as_correlate(x), ...)
 }
 
 #' @rdname network
+#' @export
 as.igraph.corr.test <- function(x, ...) {
   as.igraph(linkET::as_correlate(x), ...)
 }
 
 #' @rdname network
+#' @export
 as_tbl_graph.cor_igraph <- function(x, ...) {
   x <- as_tbl_graph(as.igraph(x, ...))
   class(x) <- unique(c("cor_tbl_graph", class(x)))
@@ -94,31 +100,37 @@ as_tbl_graph.cor_igraph <- function(x, ...) {
 }
 
 #' @rdname network
+#' @export
 as_tbl_graph.cor_md_tbl <- function(x, ...) {
   as_tbl_graph(as.igraph(x, ...))
 }
 
 #' @rdname network
+#' @export
 as_tbl_graph.correlate <- function(x, ...) {
   as_tbl_graph(as.igraph(x, ...))
 }
 
 #' @rdname network
+#' @export
 as_tbl_graph.mantel_tbl <- function(x, ...) {
   as_tbl_graph(as.igraph(x, ...))
 }
 
 #' @rdname network
+#' @export
 as_tbl_graph.easycorrelation <- function(x, ...) {
   as_tbl_graph(as.igraph(x, ...))
 }
 
 #' @rdname network
+#' @export
 as_tbl_graph.rcorr <- function(x, ...) {
   as_tbl_graph(as.igraph(x, ...))
 }
 
 #' @rdname network
+#' @export
 as_tbl_graph.corr.test <- function(x, ...) {
   as_tbl_graph(as.igraph(x, ...))
 }
