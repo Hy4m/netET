@@ -8,7 +8,8 @@
 #' @export
 layout_bipartite_circular <- function(g, ...) {
   if (!inherits(g, "bipartite_circular_graph")) {
-    g <- as_bipartite_circular(g, ...)
+    stop("Need a bipartite_circular_graph object,\n",
+         "which can be created by as_bipartite_circular().", call. = FALSE)
   }
 
   if (empty_graph(g)) {
@@ -58,10 +59,8 @@ as_bipartite_circular <- function(g,
 
   nodes <- igraph::vertex_attr(g, "name")
   edges <- igraph::as_data_frame(g, "edges")
-  inner_nodes <- rlang::enquo(inner_nodes)
-  outer_nodes <- rlang::enquo(outer_nodes)
 
-  if (all(rlang::quo_is_null(inner_nodes), rlang::quo_is_null(outer_nodes))) {
+  if (is.null(inner_nodes) && is.null(outer_nodes)) {
     if (empty(edges) || length(intersect(edges$from, edges$to)) > 0) {
       stop("Please set `inner_nodes` or `outer_nodes` parameter.", call. = FALSE)
     }
@@ -71,48 +70,13 @@ as_bipartite_circular <- function(g,
       unique(edges$from)
     }
     outer_nodes <- setdiff(nodes, inner_nodes)
-  } else if (!any(rlang::quo_is_null(inner_nodes), rlang::quo_is_null(outer_nodes))) {
-    if (quo_is_character(inner_nodes)) {
-      inner_nodes <- unique(rlang::quo_get_expr(inner_nodes))
-    } else {
-      inner_nodes <- rlang::eval_tidy(inner_nodes, nodes)
-      if (is.logical(inner_nodes)) {
-        inner_nodes <- nodes[inner_nodes]
-      }
-      inner_nodes <- unique(inner_nodes)
-    }
-
-    if (quo_is_character(outer_nodes)) {
-      outer_nodes <- unique(rlang::quo_get_expr(outer_nodes))
-    } else {
-      outer_nodes <- rlang::eval_tidy(outer_nodes, nodes)
-      if (is.logical(outer_nodes)) {
-        outer_nodes <- nodes[outer_nodes]
-      }
-      outer_nodes <- unique(outer_nodes)
-    }
+  } else if (!any(is.null(inner_nodes), is.null(outer_nodes))) {
+    inner_nodes <- unique(inner_nodes)
+    outer_nodes <- unique(outer_nodes)
   } else {
-    if (!rlang::quo_is_null(inner_nodes)) {
-      if (quo_is_character(inner_nodes)) {
-        inner_nodes <- unique(rlang::quo_get_expr(inner_nodes))
-      } else {
-        inner_nodes <- rlang::eval_tidy(inner_nodes, nodes)
-        if (is.logical(inner_nodes)) {
-          inner_nodes <- nodes[inner_nodes]
-        }
-        inner_nodes <- unique(inner_nodes)
-      }
+    if (!is.null(inner_nodes)) {
       outer_nodes <- setdiff(nodes, inner_nodes)
     } else {
-      if (quo_is_character(outer_nodes)) {
-        outer_nodes <- unique(rlang::quo_get_expr(outer_nodes))
-      } else {
-        outer_nodes <- rlang::eval_tidy(outer_nodes, nodes)
-        if (is.logical(outer_nodes)) {
-          outer_nodes <- nodes[outer_nodes]
-        }
-        outer_nodes <- unique(outer_nodes)
-      }
       inner_nodes <- setdiff(nodes, outer_nodes)
     }
   }

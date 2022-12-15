@@ -88,16 +88,23 @@ set_identical <- function(x, y) {
 rename <- function (data, ...)
 {
   ll <- list(...)
-  if (length(ll) == 0) {
+  if (length(ll) < 0) {
+    return(data)
+  }
+
+  nm <- names(data)
+  old <- unname(unlist(ll))
+  new <- names(ll)
+  id <- old %in% nm
+  old <- old[id]
+  new <- new[id]
+
+  if (length(old) < 1) {
     data
   } else {
-    nm <- names(data)
-    old <- unname(unlist(ll))
-    new <- names(ll)
-
-    old <- old[old %in% nm]
-    new <- new[old %in% nm]
-    names(data)[names(data) %in% old] <- new
+    pos <- vapply(old, function(x) which(nm == x), numeric(1), USE.NAMES = FALSE)
+    nm[pos] <- new
+    names(data) <- nm
   }
   data
 }
